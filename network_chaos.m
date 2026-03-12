@@ -13,15 +13,11 @@ function Network_Chaos
     %calculate bits/ms 
     fprintf("\n Compute timestring Bits/ms...");
     bits_per_ms = nonlinear_analysis.extract_features(time,bits);
-
-    %plot for network traffic
-    fprintf("\n Plotting Network Traffic...");
-    nonlinear_analysis.PLotNetwork(bits_per_ms);
-
+    
     % ---- Starting non_Linear analysin on network traffic
     
     fprintf("\n Starting non-linear Analysis on network traffic...")
 
-    fprintf("\n Calculate system's Entropy by Shannon's approach...");
-    network_entropy = nonlinear_analysis.Sh_Entropy(bits);
+    fprintf("\n Calculate system's Entropy by Renyi's approach...");
+    Renyi_entropy = nonlinear_analysis.Renyi_Network_Entropy(bits,3000,0.125); %third argument is alpha
 end

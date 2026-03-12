@@ -1,10 +1,12 @@
 classdef nonlinear_analysis
     methods (Static)
+
+        %function to extract as bits_per_ms
         function bits_per_ms = extract_features(time,bits)
             bits_per_ms = accumarray(time,bits);
         end
 
-
+        %function to plot Network traffic
         function PLotNetwork(bits_per_ms)
             %arguments: -> traffic network dataset
             %           -> bits_per_ms by extract_features function
@@ -12,7 +14,7 @@ classdef nonlinear_analysis
 
             x_axis = 1:length(bits_per_ms);
 
-            figure;
+            figure('Name', "Network Traffic Distribution of bits/ms");
             plot(x_axis,bits_per_ms,'-r','LineWidth',0.5);
             title("NetWork's Dynamic");
             xlabel("Time (ms)");
@@ -20,27 +22,27 @@ classdef nonlinear_analysis
             grid on;
         end
 
-        % Shanno's Entropy of network
-        function network_entropy = Sh_Entropy(bits)
+        % Shannon's Entropy of network
+        function Shannon_network_entropy = Sh_Entropy(bits,window_size)
             % argument: bits (traffic_data.Length)
+            %           window size -> window to seperate signal
 
-            %---- block of code to comppute system's entropy ----
-            window_size = 1000; % set a window size 
+            if nargin < 2
+                window_size = 1000;
+            end
+
+            %---- block of code to comppute system's entropy ---- 
 
             %number of samples
             number_samples = floor(length(bits) / window_size);
-            %have a different amount of packets
-            samples = size(number_samples,1);
             %create an 1D array with zeros for saving entropy
-            network_entropy = zeros(samples,1);
+            Shannon_network_entropy = zeros(number_samples,1);
 
             for i = 1:number_samples
-                if i == 1
-                    end_idx = window_size;
-                end
                 
+                %definition of the start and end boundaries
+                end_idx = (i * window_size);
                 start_idx = end_idx - window_size + 1;
-                end_idx = (i * window_size) + 1;
 
                 %calulate entropies for every 1000 bits
                 temp_bits = bits(start_idx : end_idx);
@@ -51,7 +53,7 @@ classdef nonlinear_analysis
                 temp = temp(temp > 0);
 
                 %Shannon's Entropy approach
-                network_entropy(i) = -sum(temp .* log2(temp));
+                Shannon_network_entropy(i) = -sum(temp .* log2(temp));
 
             end
             
@@ -64,14 +66,14 @@ classdef nonlinear_analysis
             ylabel("Probability Density");
 
             %addind block of code to plot entropy for network
-            mean_value = mean(network_entropy);
-            std_value = std(network_entropy);
+            mean_value = mean(Shannon_network_entropy);
+            std_value = std(Shannon_network_entropy);
 
-            x = linspace(mean_value - 4*std_value, mean_value + 4*std_value, 100);
+            x = linspace(mean_value - 4*std_value, mean_value + 4*std_value, 200);
             y = normpdf(x,mean_value,std_value);
 
             %creating histogramm for raw datas
-            histogram(network_entropy,'Normalization','pdf');
+            histogram(Shannon_network_entropy,'Normalization','pdf');
             
             %creating figure for entropy of system
             hold on;
@@ -83,7 +85,49 @@ classdef nonlinear_analysis
             grid on;
             xlabel("Time");
             ylabel("System's Entropy");
-            plot(network_entropy,'-b','LineWidth',1.5);
+            plot(Shannon_network_entropy,'-c','LineWidth',1.5);
+        end
+
+        %function to calculate Renyi Entropy
+        function Renyi_entropy = Renyi_Network_Entropy(bits,window_size,alpha)
+            % arguments: bits -> bits_per_ms
+            %           window_size -> window to seperate signal
+            %           alpha -> Renyi's entropy parameter
+            
+            if nargin < 2
+                window_size = 1000;
+            end
+
+            if alpha == 1
+                fprintf("We cannot calculate Renyi Entropy because alpha parameter is 1.");
+            end
+
+            number_samples = floor(length(bits) / window_size);
+            disp(number_samples);
+            %creating 1D array to save Renyi's Entropy
+            Renyi_entropy = zeros(number_samples,1);
+
+            for i = 1:number_samples
+                %creating boundaries
+                end_idx = i * window_size;
+                start_idx = end_idx - window_size + 1;
+
+                %calculate entropies for every bracket of bits
+                temp_bits = bits(start_idx : end_idx);
+
+                temp = histcounts(temp_bits,'Normalization','probability');
+
+                %adding this line in order to avoid inf
+                temp = temp(temp > 0);
+
+                Renyi_entropy(i) = (1/(1 - alpha)) * log2(sum(temp .^ alpha));
+            end
+
+            figure('Name','Network Traffic Entropy in Time');
+            grid on;
+            xlabel('Time');
+            ylabel("System's Entropy");
+            plot(Renyi_entropy,'-c','LineWidth',1.5);
         end
     
     end
