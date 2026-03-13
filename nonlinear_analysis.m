@@ -88,8 +88,8 @@ classdef nonlinear_analysis
             plot(Shannon_network_entropy,'-c','LineWidth',1.5);
         end
 
-        %function to calculate Renyi Entropy
-        function Renyi_entropy = Renyi_Network_Entropy(bits,window_size,alpha)
+        %function to calculate Renyi Entropy | version1.0
+        function Renyi_entropy = Renyi_Network_Entropy(bits,window_size,alpha_matrix)
             % arguments: bits -> bits_per_ms
             %           window_size -> window to seperate signal
             %           alpha -> Renyi's entropy parameter
@@ -98,14 +98,11 @@ classdef nonlinear_analysis
                 window_size = 1000;
             end
 
-            if alpha == 1
-                fprintf("We cannot calculate Renyi Entropy because alpha parameter is 1.");
-            end
-
+            matrix_size = length(alpha_matrix);
             number_samples = floor(length(bits) / window_size);
             disp(number_samples);
             %creating 1D array to save Renyi's Entropy
-            Renyi_entropy = zeros(number_samples,1);
+            Renyi_entropy = zeros(number_samples,matrix_size); %creating a 2D array
 
             for i = 1:number_samples
                 %creating boundaries
@@ -119,15 +116,28 @@ classdef nonlinear_analysis
 
                 %adding this line in order to avoid inf
                 temp = temp(temp > 0);
+                
+                for j = 1:length(alpha_matrix)
+                    alpha = alpha_matrix(j);
 
-                Renyi_entropy(i) = (1/(1 - alpha)) * log2(sum(temp .^ alpha));
+                    %as we proved, when alpha tends to 1, we obtain Shannon entropy
+                    if alpha == 1
+                        Renyi_entropy(i,j) = -sum(temp .* log2(temp));
+                    else
+                        Renyi_entropy(i,j) = (1/(1 - alpha)) * log2(sum(temp .^ alpha));
+                    end
+                end
             end
 
-            figure('Name','Network Traffic Entropy in Time');
-            grid on;
-            xlabel('Time');
-            ylabel("System's Entropy");
-            plot(Renyi_entropy,'-c','LineWidth',1.5);
+            figure("Name","Renyi Entropy on Network Traffic");
+            for k = 1:4
+                grid on;
+                subplot(2,2,k);
+                plot(Renyi_entropy(:,k),'-c','LineWidth',1.5);
+                title("Renyi Entropy (a = " + string(alpha_matrix(k)) +") ");
+                xlabel("Time (ms)");
+                ylabel("Renyi Entropy");
+            end
         end
     
     end
