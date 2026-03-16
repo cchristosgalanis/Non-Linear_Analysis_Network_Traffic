@@ -139,6 +139,37 @@ classdef nonlinear_analysis
                 ylabel("Renyi Entropy");
             end
         end
+
+        %function to calculate Renyi Entropy | version2.0
+        function model_output = statistic_model(Renyi_entropy)
+            %argument: matrix of Renyi entropies
+            
+            %initialize of parameters
+            w = 15; %according to paper of Renyi Entropy approach
+            epsilon = random(0,1); % epsilon is number between 0 and 1
+            gamma = 2; %or 3 | parameter for std
+            D = zeros(1,w);
+            matrix_size = length(Renyi_entropy);
+            beta = zeros(1,matrix_size);
+
+            for t=w+1: 1 :length(Renyi_entropy)
+                %difference entropies of consecutive entropies
+                for k = 1:w
+                    m = t - w + k;
+                    D(k) = abs(Renyi_entropy(m) - Renyi_entropy(m-1));
+                end
+
+                %finding min and max in D matrix for each window
+                Dmin = min(D); Dmax = max(D);
+
+                if (Dmin - Dmax) == 0
+                    beta(t) = 0;
+                else
+                    %formula for dynamically calculating β
+                    beta(t) = sum((D - Dmax)/(Dmin - Dmax) + epsilon)/w;
+                end
+            end
+        end
     
     end
 end
