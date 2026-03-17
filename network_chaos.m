@@ -20,5 +20,7 @@ function Network_Chaos
 
     fprintf("\n Calculate system's Entropy by Renyi's approach...");
     %calculate Renyi entropy for various alpha's parameter values
-    Renyi_entropy = nonlinear_analysis.Renyi_Network_Entropy(bits,3000,[0.125,1,2,10]);
+    Renyi_entropy = nonlinear_analysis.Renyi_Network_Entropy(bits,1000,[0.125,1,2,10]);
+    model_output = nonlinear_analysis.statistic_model(Renyi_entropy(:,4)');
+
 end

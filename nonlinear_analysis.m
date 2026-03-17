@@ -146,11 +146,17 @@ classdef nonlinear_analysis
             
             %initialize of parameters
             w = 15; %according to paper of Renyi Entropy approach
-            epsilon = random(0,1); % epsilon is number between 0 and 1
+            epsilon = 0.001; % epsilon is number between 0 and 1
             gamma = 2; %or 3 | parameter for std
             D = zeros(1,w);
             matrix_size = length(Renyi_entropy);
             beta = zeros(1,matrix_size);
+            R_pred = zeros(1,matrix_size);
+            A = zeros(1,matrix_size);
+            C = zeros(1,matrix_size);
+            F = zeros(1,matrix_size);
+            upper = zeros(1,matrix_size);
+            lower = zeros(1,matrix_size);
 
             for t=w+1: 1 :length(Renyi_entropy)
                 %difference entropies of consecutive entropies
@@ -163,12 +169,65 @@ classdef nonlinear_analysis
                 Dmin = min(D); Dmax = max(D);
 
                 if (Dmin - Dmax) == 0
-                    beta(t) = 0;
+                    beta(t) = epsilon / w; % explain this in paper
                 else
                     %formula for dynamically calculating β
                     beta(t) = sum((D - Dmax)/(Dmin - Dmax) + epsilon)/w;
                 end
+                % calculating predictable entropy
+                for j = 1:w
+                    R_pred(t) = R_pred(t) + beta(t) .* (1-beta(t))^(j-1) .* Renyi_entropy(t-j);
+                end
+
+                %calculatin A matrix for mean and C matrix for std
+                R_wind_pred = R_pred( (t-w+1) : t);
+
+                A(t) = mean(R_wind_pred);
+                C(t) = std(R_wind_pred,1);
+
+                %creating F matrix by multiple with gamma
+                F(t) = gamma * C(t);
+                upper(t) = A(t) + F(t);
+                lower(t) = A(t) - F(t);
             end
+            
+            % valid range
+            t_valid = (w+1):matrix_size;
+
+            figure("Name","Dynamic Anomaly Detection using Renyi Entropy and Adaptive EWMA Thresholds"); 
+            hold on;
+
+            % 1. Φόντο Κανονικής Περιοχής (Απαλό, ξεκούραστο γκρι)
+            fill([t_valid fliplr(t_valid)], [upper(t_valid) fliplr(lower(t_valid))], ...
+                [0.88 0.89 0.91], 'EdgeColor', 'none', 'FaceAlpha', 0.6);
+
+            % 2. Όρια (Κομψό Μπορντό/Κόκκινο με διακεκομμένη γραμμή για να μην μπερδεύεται με την εντροπία)
+            plot(t_valid, upper(t_valid), 'Color', [0.75 0 0], 'LineWidth', 1.2, 'LineStyle', '--');
+            plot(t_valid, lower(t_valid), 'Color', [0.75 0 0], 'LineWidth', 1.2, 'LineStyle', '--');
+
+            % 3. Πραγματική Εντροπία (Βαθύ Μπλε για να "γράφει" καλά πάνω στο γκρι)
+            plot(1:matrix_size, Renyi_entropy, 'Color', [0 0.3 0.6], 'LineWidth', 1.8);
+
+            % Detect anomalies ONLY where bounds exist
+            anomalies = false(1, matrix_size);
+            anomalies(t_valid) = (Renyi_entropy(t_valid) > upper(t_valid)) | (Renyi_entropy(t_valid) < lower(t_valid));
+
+            % 4. Anomalies (Έντονο Magenta κύκλοι - Χωρίς γραμμή σύνδεσης)
+            plot(find(anomalies), Renyi_entropy(anomalies), 'o', ...
+                'MarkerEdgeColor', 'none', ...
+                'MarkerFaceColor', [1 0 0.5], ...
+                'MarkerSize', 5);
+
+            % Καλλωπισμός Γραφήματος
+            legend('Normal Region', 'Threshold Limits', '', 'Renyi Entropy (Observed)', 'Detected Anomalies', ...
+                   'Location', 'northeastoutside');
+            xlabel('Time Window (t)');
+            ylabel('Entropy Value (H)');
+            set(gca, 'GridColor', [0.8 0.8 0.8], 'FontSize', 10);
+            grid on;
+            hold off;
+
+            model_output = [lower' upper'];
         end
     
     end
