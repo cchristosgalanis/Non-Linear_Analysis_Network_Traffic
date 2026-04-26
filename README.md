@@ -88,7 +88,7 @@ $$H(X|Y)\le H(X)$$
 ### Shannon Entropy Distribution Over Time
 During periods of network browsing, packets had many different sizes with small probabilities, yielding a high $H$ value. Conversely, during absolute saturation (Speedtest), a single packet size dominated the traffic, causing the entropy of the system to collapse.
 
-![Network Traffic Entropy in Time](Network%20Traffic%20Entropy%20in%20Time.png)
+![Network Traffic Entropy in Time](Diagrams/Dynamic Anomaly Detection using Renyi Entropy and Adaptive EWMA Thresholds.png)
 
 ### Renyi Entropy Analysis Across Multiple Orders
 At the lowest order ($a=0.125$), the flooding event is completely masked by amplified background noise. As the order increases ($a=2$ and $a=10$), the algorithm progressively shifts its focus toward the most frequent events. Because the attack introduces a massive volume of identical packets, the probability of the dominant event skyrockets. At $a=10$, the entropy collapses entirely to a near-zero line, making the anomaly unmistakably prominent.
