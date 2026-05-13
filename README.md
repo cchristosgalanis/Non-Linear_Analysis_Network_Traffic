@@ -93,7 +93,7 @@ During periods of network browsing, packets had many different sizes with small 
 ### Renyi Entropy Analysis Across Multiple Orders
 At the lowest order ($a=0.125$), the flooding event is completely masked by amplified background noise. As the order increases ($a=2$ and $a=10$), the algorithm progressively shifts its focus toward the most frequent events. Because the attack introduces a massive volume of identical packets, the probability of the dominant event skyrockets. At $a=10$, the entropy collapses entirely to a near-zero line, making the anomaly unmistakably prominent.
 
-![Renyi Entropy on Network Traffic](Renyi%20Entropy%20on%20Network%20Traffic.png)
+![Renyi Entropy on Network Traffic](Diagrams/Renyi_Entropy_on_Network_Traffic_Analysis.png)
 
 ### Dynamic Anomaly Detection (Adaptive EWMA)
 Relying on a manually pre-selected, static numerical threshold introduces a critical operational vulnerability: the system cannot adapt to evolving network loads. This advanced methodology replaces fixed limits with a dynamically calculated confidence interval, ensuring maximum sensitivity to attacks while drastically reducing false alarms in dynamic SDN environments.
